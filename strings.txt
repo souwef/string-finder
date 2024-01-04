@@ -1,0 +1,6 @@
+clicker
+autoclicker
+ghostclient
+
+
+(you can change this to whatever strings you want to search for)
