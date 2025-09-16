@@ -1,10 +1,29 @@
-
 import psutil
 import subprocess
 import os
+import sys
+import tempfile
 from datetime import datetime
 from typing import List, Dict
 from pathlib import Path
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+def get_xxstrings_exe_path():
+    exe_name = "xxstrings64.exe"
+    src_path = resource_path(exe_name)
+    temp_dir = tempfile.gettempdir()
+    dst_path = os.path.join(temp_dir, exe_name)
+    try:
+        if not os.path.exists(dst_path) or (os.path.getsize(dst_path) != os.path.getsize(src_path)):
+            with open(src_path, "rb") as src, open(dst_path, "wb") as dst:
+                dst.write(src.read())
+    except Exception:
+        pass
+    return dst_path
 
 class ProcessScanner:
     def __init__(self, strings_file: str = "strings.txt", output_file: str = "results.txt"):
@@ -62,7 +81,8 @@ class ProcessScanner:
     def scan_process(self, process: Dict) -> List[str]:
         found_strings = []
         try:
-            command = f"xxstrings64.exe -p {process['pid']}"
+            exe_path = get_xxstrings_exe_path()
+            command = f'"{exe_path}" -p {process["pid"]}'
             subproc = subprocess.Popen(
                 command,
                 shell=True,
